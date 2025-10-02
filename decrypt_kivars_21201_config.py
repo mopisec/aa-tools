@@ -95,35 +95,38 @@ def main():
     key = custom_rc4(config_blob[0x004:0x014], config_blob[0x000:0x004], 223)
     print(f'[+] Custom RC4 Key: {key.hex()}')
     
-    # Parse config fields in the blob
-    for field_info in CONFIG_MAP:
-        enc = config_blob[field_info[2]:field_info[2]+field_info[3]]
-        if field_info[1] == FIELD_TYPE_FLAG:
-            if enc == b'\x00':
-                dec = 'NO_PROXY_DIRECT_CONNECT'
-            elif enc == b'\x01':
-                dec = 'USE_PROXY_INFO_IN_REGISTRY'
-            elif enc == b'\x02':
-                dec = 'USE_PROXY_INFO_IN_CONFIG'
-        else:
-            if field_info[4]:
-                dec = custom_rc4(enc, key, field_info[5])
+    try:
+        # Parse config fields in the blob
+        for field_info in CONFIG_MAP:
+            enc = config_blob[field_info[2]:field_info[2]+field_info[3]]
+            if field_info[1] == FIELD_TYPE_FLAG:
+                if enc == b'\x00':
+                    dec = 'NO_PROXY_DIRECT_CONNECT'
+                elif enc == b'\x01':
+                    dec = 'USE_PROXY_INFO_IN_REGISTRY'
+                elif enc == b'\x02':
+                    dec = 'USE_PROXY_INFO_IN_CONFIG'
             else:
-                dec = enc
+                if field_info[4]:
+                    dec = custom_rc4(enc, key, field_info[5])
+                else:
+                    dec = enc
+                
+                if field_info[6]:
+                    dec = custom_rc4(dec, key, field_info[7])
+                
+                if field_info[1] == FIELD_TYPE_STRING:
+                    dec = "'" + dec.rstrip(b'\x00').decode() + "'"
+                elif field_info[1] == FIELD_TYPE_ADDRESS:
+                    dec = parse_address_object(dec)
+                elif field_info[1] == FIELD_TYPE_INTEGER:
+                    dec = struct.unpack('<I', dec)[0]
+                elif field_info[1] == FIELD_TYPE_BYTES:
+                    dec = dec.hex()
             
-            if field_info[6]:
-                dec = custom_rc4(dec, key, field_info[7])
-            
-            if field_info[1] == FIELD_TYPE_STRING:
-                dec = "'" + dec.rstrip(b'\x00').decode() + "'"
-            elif field_info[1] == FIELD_TYPE_ADDRESS:
-                dec = parse_address_object(dec)
-            elif field_info[1] == FIELD_TYPE_INTEGER:
-                dec = struct.unpack('<I', dec)[0]
-            elif field_info[1] == FIELD_TYPE_BYTES:
-                dec = dec.hex()
-        
-        print(f'[+] {field_info[0]} : {dec}')
+            print(f'[+] {field_info[0]} : {dec}')
+    except UnicodeDecodeError:
+        print('[-] Failed to decode config field. Make sure that this tool only supports Kivars v2120.1')
 
 
 if __name__ == '__main__':
