@@ -11,7 +11,7 @@ FIELD_TYPE_FLAG = 0x5
 CONFIG_MAP = [
     ['Mutex Name',          FIELD_TYPE_STRING,  0x014, 0x028, True,  0x77, False, 0x00],
     ['C2',                  FIELD_TYPE_ADDRESS, 0x03C, 0x0DC, True,  0xCE, False, 0x00], 
-    ['Do Nothing Flag',     FIELD_TYPE_INTEGER, 0x118, 0x004, False, 0x00, False, 0x00], 
+    ['Enable Hour Limit',   FIELD_TYPE_INTEGER, 0x118, 0x004, False, 0x00, False, 0x00], 
     ['Active Hour (Start)', FIELD_TYPE_BYTES,   0x11C, 0x001, False, 0x00, False, 0x00], 
     ['Active Hour (End)',   FIELD_TYPE_BYTES,   0x11D, 0x001, False, 0x00, False, 0x00], 
     ['Unused (A)',          FIELD_TYPE_BYTES,   0x11E, 0x002, False, 0x00, False, 0x00], 
